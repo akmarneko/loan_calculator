@@ -1,6 +1,8 @@
 package com.example.administrator.myapps;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,6 +16,10 @@ public class CalculatorActivity extends AppCompatActivity {
 
     private EditText etLoanAmount, etDownPayment, etTerm, etAnnualInterestRate;
     private TextView tvMonthlyPayment, tvTotalRepayment, tvTotalInterest, tvAverageMonthlyInterest;
+    private SharedPreferences  spLocalCalHistory;
+
+    private double monthlyPayment = 0.00, totalRepayment = 0.00, totalInterest = 0.00,  monthlyInterest = 0.00;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +35,18 @@ public class CalculatorActivity extends AppCompatActivity {
         tvTotalRepayment = findViewById(R.id.total_repayment);
         tvTotalInterest = findViewById(R.id.total_interest);
         tvAverageMonthlyInterest = findViewById(R.id.average_monthly_interest);
+
+        spLocalCalHistory = getSharedPreferences("LocalCalHistory", Context.MODE_PRIVATE);
+
+        etLoanAmount.setText(spLocalCalHistory.getString("amount", "0"));
+        etDownPayment.setText(spLocalCalHistory.getString("downPayment", "0"));
+        etTerm.setText(spLocalCalHistory.getString("interestRate", "0"));
+        etAnnualInterestRate.setText(spLocalCalHistory.getString("term", "0"));
+
+        tvMonthlyPayment.setText(spLocalCalHistory.getString("monthlyPayment", "0.00"));
+        tvTotalRepayment.setText(spLocalCalHistory.getString("totalRepayment", "0.00"));
+        tvTotalInterest.setText(spLocalCalHistory.getString("totalInterest", "0.00"));
+        tvAverageMonthlyInterest.setText(spLocalCalHistory.getString("monthlyInterest", "0.00"));
     }
 
     public void onClick(View v){
@@ -55,10 +73,10 @@ public class CalculatorActivity extends AppCompatActivity {
         double noOfMonth = (Integer.parseInt(term) * 12);
 
         if(noOfMonth > 0){
-            double monthlyPayment = loanAmount * (interest + (interest/(java.lang.Math.pow((1+interest), noOfMonth)-1)));
-            double totalRepayment = monthlyPayment * noOfMonth;
-            double totalInterest = totalRepayment - loanAmount;
-            double monthlyInterest = totalInterest / noOfMonth;
+            monthlyPayment = loanAmount * (interest + (interest/(java.lang.Math.pow((1+interest), noOfMonth)-1)));
+            totalRepayment = monthlyPayment * noOfMonth;
+            totalInterest = totalRepayment - loanAmount;
+            monthlyInterest = totalInterest / noOfMonth;
 
             tvMonthlyPayment.setText(String.valueOf(monthlyPayment));
             tvTotalRepayment.setText(String.valueOf(totalRepayment));
@@ -66,6 +84,16 @@ public class CalculatorActivity extends AppCompatActivity {
             tvAverageMonthlyInterest.setText(String.valueOf(monthlyInterest));
         }
 
+        SharedPreferences.Editor editor = spLocalCalHistory.edit()
+                .putString("amount", String.valueOf(amount))
+                .putString("downPayment", String.valueOf(downPayment))
+                .putString("interestRate", String.valueOf(interestRate))
+                .putString("term", String.valueOf(term))
+                .putString("monthlyPayment",String.valueOf(monthlyPayment))
+                .putString("totalRepayment",String.valueOf(totalRepayment))
+                .putString("totalInterest",String.valueOf(totalInterest))
+                .putString("monthlyInterest",String.valueOf(monthlyInterest));
+        editor.apply();
     }
 
     private void reset(){
